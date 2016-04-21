@@ -5589,10 +5589,10 @@ static void mxt_start(struct mxt_data *data)
 	} else {
 #ifdef MXT_GESTURE_RECOGNIZE
 #ifdef MXT_LPWG
-		data->is_lpwg_report_enable = 0;
-		data->mxt_knock_on_enable= 0;
+		data->is_lpwg_report_enable = 1;
+		data->mxt_knock_on_enable= 1;
 		data->mxt_password_enable = 0;
-		gesture_control(data, 0);
+		gesture_control(data, 1);
 
 		memset(g_tci_press, 0, sizeof(g_tci_press));
 		memset(g_tci_report, 0, sizeof(g_tci_report));

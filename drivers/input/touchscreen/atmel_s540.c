@@ -19,6 +19,7 @@
 #include <linux/firmware.h>
 #include <linux/i2c.h>
 #include <linux/i2c/atmel_s540.h>
+#include <linux/input.h>
 #include <linux/input/mt.h>
 #include <linux/interrupt.h>
 #include <linux/slab.h>
@@ -2040,6 +2041,7 @@ static void mxt_proc_t93_messages(struct mxt_data *data, u8 *message)
 {
 	struct device *dev = &data->client->dev;
 	u8 msg;
+		struct input_dev *input_dev = data->input_dev; 
 
 	if (data->in_bootloader)
 		return;
@@ -2067,6 +2069,10 @@ static void mxt_proc_t93_messages(struct mxt_data *data, u8 *message)
 			hrtimer_start(&data->multi_tap_timer, ktime_set(0, MS_TO_NS(WWAITED_UDF_TIME)), HRTIMER_MODE_REL);
 #else
 		send_uevent(lpwg_event);
+			input_report_key(input_dev, KEY_WAKEUP, 1);  
+			input_report_key(input_dev, KEY_WAKEUP, 0);  
+			input_sync(input_dev);
+
 #endif
 		mutex_unlock(&data->input_dev->mutex);
 	}
@@ -2078,6 +2084,7 @@ static void mxt_proc_t24_messages(struct mxt_data *data, u8 *message)
 	u8 msg;
 	int x;
 	int y;
+		struct input_dev *input_dev = data->input_dev; 
 
 	if (data->in_bootloader)
 		return;
@@ -2119,6 +2126,10 @@ static void mxt_proc_t24_messages(struct mxt_data *data, u8 *message)
 		}
 		dev_info(dev, "Double_Tap!!     %d     %d \n",x,y);
 		send_uevent(knockon_event);
+		input_report_key(input_dev, KEY_WAKEUP, 1);  
+		input_report_key(input_dev, KEY_WAKEUP, 0);  
+		input_sync(input_dev);
+
 	}
 }
 
@@ -6024,6 +6035,9 @@ static int mxt_initialize_t9_input_device(struct mxt_data *data)
 					     data->pdata->t15_keymap[i]);
 	}
 
+	set_bit(EV_KEY, input_dev->evbit);  
+	set_bit(KEY_WAKEUP, input_dev->keybit);  
+	
 	input_set_drvdata(input_dev, data);
 
 	error = input_register_device(input_dev);
